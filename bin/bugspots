@@ -24,6 +24,11 @@ OptionParser.new do |opts|
     options[:depth] = d.to_i
   end
 
+  # Option: Set Path Filter
+  opts.on('-f', '--filter [regex]', Regexp, 'path filter regex, ie: "\.rb$" or "\.[rb|js]$"') do |regex|
+    options[:filter] = regex
+  end
+
   # Option: Set Bugfix Indicator
   opts.on('-w', '--words ["w1,w2"]', 'bugfix indicator word list, ie: "fixes,closed"') do |words|
     options[:regex] = Regexp.new(words.split(',').join('|'))
@@ -49,7 +54,7 @@ options[:branch] ||= "master"
 puts "Scanning #{ARGV[0]} repo".foreground(:green)
 
 begin
-  fixes, spots = Bugspots.scan(ARGV[0], options[:branch], options[:depth], options[:regex])
+  fixes, spots = Bugspots.scan(ARGV[0], options[:branch], options[:depth], options[:filter], options[:regex])
 
   puts "\tFound #{fixes.size} bugfix commits, with #{spots.size} hotspots:".foreground(:yellow)
   puts

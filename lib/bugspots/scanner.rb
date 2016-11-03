@@ -4,7 +4,8 @@ module Bugspots
   Fix = Struct.new(:message, :date, :files)
   Spot = Struct.new(:file, :score)
 
-  def self.scan(repo, branch = "master", depth = 500, regex = nil)
+  def self.scan(repo, branch = "master", depth = 500, filter = nil, regex = nil)
+    filter ||= /.*/
     regex ||= /\b(fix(es|ed)?|close(s|d)?)\b/i
     fixes = []
 
@@ -19,8 +20,8 @@ module Bugspots
     walker.each do |commit|
       if commit.message.scrub =~ regex
         files = commit.diff(commit.parents.first).deltas.collect do |d|
-          d.old_file[:path]
-        end
+          d.old_file[:path] if d.old_file[:path] =~ filter
+        end.compact
         fixes << Fix.new(commit.message.scrub.split("\n").first, commit.time, files)
       end
     end
